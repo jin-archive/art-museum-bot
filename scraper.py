@@ -1,9 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
-import json
 from datetime import datetime
+import re
 
-# 1. 가나다순으로 정렬된 미술관 목록 및 URL 데이터
+# 1. 미술관 목록 (가나다 순 정렬)
 museums = [
     {"name": "경남도립미술관", "url": "https://www.gyeongnam.go.kr/gam/board/list.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&contentsSid=5850&cpath=%2Fgam"},
     {"name": "광주시립미술관", "url": "https://artmuse.gwangju.go.kr/bb/bbBoard.php?boardID=NEWS&pageID=artmuse0501000000"},
@@ -12,7 +12,7 @@ museums = [
     {"name": "대전시립미술관", "url": "https://www.daejeon.go.kr/dma/DmaBoardList.do?usrMenuCd=0601000000&menuSeq=6098"},
     {"name": "부산시립미술관", "url": "https://art.busan.go.kr/anucmt/list.nm"},
     {"name": "부산현대미술관", "url": "https://www.busan.go.kr/moca/news01"},
-    {"name": "서울시립미술관", "url": "https://sema.seoul.go.kr/kr/bbs/611389/getBbsList"},
+    {"name": "서울시립미술관", "url": "https://sema.seoul.go.kr/kr/bbs/611389/getBbsList"}, # API URL
     {"name": "수원시립미술관", "url": "https://suma.suwon.go.kr/news/news_list.do"},
     {"name": "울산시립미술관", "url": "https://www.ulsan.go.kr/s/uam/bbs/list.ulsan?bbsId=BBS_0000000000000188&mId=001007002001000000"},
     {"name": "전남도립미술관", "url": "https://artmuseum.jeonnam.go.kr/www/1011?pageIndex=1&bbsSeq=2&clSeq=2&condition=&keyword=&pageUnit=10&order=INSERT_DT_DESC&url=%2Fwww%2Fbbs%2Fview%2Fpost%2Flist"},
@@ -22,8 +22,26 @@ museums = [
 ]
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 }
+
+# 2. 키워드 설정
+include_keywords = ["채용", "모집", "시험", "근로자", "노동자", "직원", "공무원", "공무직", "기간제"]
+exclude_keywords = ["서류", "면접", "합격"]
+
+def filter_by_keywords(title):
+    # 대소문자 구분 없이 필터링
+    title_lower = title.lower()
+    
+    # 포함 키워드 OR 조건
+    if not any(kw in title_lower for kw in include_keywords):
+        return False
+    
+    # 제외 키워드 AND 조건
+    if any(kw in title_lower for kw in exclude_keywords):
+        return False
+        
+    return True
 
 def crawl_sites():
     results = {}
@@ -33,8 +51,39 @@ def crawl_sites():
         results[name] = []
         
         try:
-            # SSL 인증서 오류 무시 및 타임아웃 설정
-            response = requests.get(url, headers=headers, verify=False, timeout=10)
+            # 특수 케이스 처리: 서울시립미술관 (API/JSON)
+            if name == "서울시립미술관":
+                api_response = requests.get(url, headers=headers, verify=False, timeout=10)
+                data = api_response.json()
+                
+                # SeMA JSON 구조에서 데이터 추출 (가정: 'nttList' 또는 'list' 아래에 항목이 있음)
+                post_items = data.get('nttList') or data.get('list') or []
+                
+                for item in post_items:
+                    # 'nttSj'는 제목, 'nttId'는 고유 ID
+                    title = item.get('nttSj')
+                    ntt_id = item.get('nttId')
+                    
+                    if title and filter_by_keywords(title) and ntt_id:
+                        # 상세 페이지 URL 패턴 생성
+                        full_link = f"https://sema.seoul.go.kr/kr/bbs/611389/detail.nm?bbsId=611389&nttId={ntt_id}"
+                        
+                        if not any(i['link'] == full_link for i in results[name]):
+                            results[name].append({"title": title, "link": full_link})
+                continue # SeMA는 JSON 처리로 종료
+                
+            # 특수 케이스 처리: 청주시립미술관 (Referer 헤더 필요)
+            session = requests.Session()
+            if name == "청주시립미술관":
+                # 세션을 사용하여 Referer 추가
+                session.headers.update({
+                    'User-Agent': headers['User-Agent'],
+                    'Referer': url # 목록 페이지 자체를 Referer로 설정
+                })
+                response = session.get(url, verify=False, timeout=10)
+            else:
+                response = session.get(url, headers=headers, verify=False, timeout=10)
+                
             soup = BeautifulSoup(response.text, 'html.parser')
             
             # 모든 a 태그를 검색하여 게시글 제목 추출 (실제 운영시 사이트별 정확한 selector 사용 권장)
@@ -42,12 +91,10 @@ def crawl_sites():
                 title = a_tag.get_text(strip=True)
                 href = a_tag.get('href', '')
                 
-                # 조건 필터링: "채용"이 포함되어 있고, "합격"이 포함되지 않은 경우
-                if "채용" in title and "합격" not in title:
-                    # 상대경로인 경우 절대경로로 변환
-                    full_link = href if href.startswith('http') else url.split('/')[0] + '//' + url.split('/')[2] + href
+                if filter_by_keywords(title):
+                    # requests.compat.urljoin을 사용하여 SuMA 등의 링크 문제 완벽 해결
+                    full_link = requests.compat.urljoin(url, href)
                     
-                    # 중복 방지
                     if not any(item['link'] == full_link for item in results[name]):
                         results[name].append({"title": title, "link": full_link})
         except Exception as e:
@@ -65,7 +112,7 @@ def generate_html(data):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>전국 공공미술관 채용 공고 모아보기</title>
+        <title>🏛️ 전국 공공미술관 채용/모집 공고 모아보기</title>
         <style>
             body {{ font-family: 'Malgun Gothic', sans-serif; padding: 20px; max-width: 800px; margin: auto; }}
             .header {{ text-align: center; margin-bottom: 20px; }}
@@ -86,7 +133,8 @@ def generate_html(data):
     </head>
     <body>
         <div class="header">
-            <h2>🏛️ 전국 공공미술관 채용 공고 모아보기</h2>
+            <h2>🏛️ 전국 공공미술관 채용/모집 공고 모아보기</h2>
+            <p><small>포함 키워드: {', '.join(include_keywords)} | 제외 키워드: {', '.join(exclude_keywords)}</small></p>
             <p><small>마지막 업데이트: {update_time}</small></p>
         </div>
 
@@ -110,7 +158,7 @@ def generate_html(data):
             for post in posts:
                 html += f'    <li><a href="{post["link"]}" target="_blank">📄 {post["title"]}</a></li>\n'
         else:
-            html += f'    <li class="empty">현재 진행 중인 채용 공고가 없습니다.</li>\n'
+            html += f'    <li class="empty">현재 필터링 조건에 맞는 공고가 없습니다.</li>\n'
             
         html += "  </ul>\n</div>\n"
         
