@@ -7,21 +7,16 @@ import urllib3
 # SSL 인증서 경고 무시
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# 1. 미술관 목록 및 URL
+# 1. 미술관 목록 (요청하신 5곳 제외)
 museums = [
     {"name": "경남도립미술관", "url": "https://www.gyeongnam.go.kr/gam/board/list.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&contentsSid=5850&cpath=%2Fgam"},
     {"name": "광주시립미술관", "url": "https://artmuse.gwangju.go.kr/bb/bbBoard.php?boardID=NEWS&pageID=artmuse0501000000"},
-    {"name": "대구미술관", "url": "https://daeguartmuseum.or.kr/index.do?menu_id=00000791"},
     {"name": "대전시립미술관", "url": "https://www.daejeon.go.kr/dma/DmaBoardList.do?usrMenuCd=0601000000&menuSeq=6098"},
     {"name": "부산시립미술관", "url": "https://art.busan.go.kr/anucmt/list.nm"},
     {"name": "부산현대미술관", "url": "https://www.busan.go.kr/moca/news01"},
-    {"name": "서울시립미술관", "url": "https://sema.seoul.go.kr/kr/bbs/611389/getList"},
     {"name": "수원시립미술관", "url": "https://suma.suwon.go.kr/news/news_list.do"},
-    {"name": "울산시립미술관", "url": "https://www.ulsan.go.kr/s/uam/bbs/list.ulsan?bbsId=BBS_0000000000000188&mId=001007002001000000"},
-    {"name": "전남도립미술관", "url": "https://artmuseum.jeonnam.go.kr/www/1011?pageIndex=1&bbsSeq=2&clSeq=2&condition=&keyword=&pageUnit=10&order=INSERT_DT_DESC&url=%2Fwww%2Fbbs%2Fview%2Fpost%2Flist"},
     {"name": "전북도립미술관", "url": "https://www.jma.go.kr/bbs/board.php?bo_id=notice"},
-    {"name": "청주시립미술관", "url": "https://cmoa.cheongju.go.kr/www/selectBbsNttList.do?bbsNo=5&key=72"},
-    {"name": "포항시립미술관", "url": "https://poma.pohang.go.kr/poma/bbs/board.php?bo_table=notice"}
+    {"name": "청주시립미술관", "url": "https://cmoa.cheongju.go.kr/www/selectBbsNttList.do?bbsNo=5&key=72"}
 ]
 
 # 강력한 브라우저 위장 헤더
@@ -31,34 +26,28 @@ headers = {
     'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7'
 }
 
-# 💡 필터링 키워드
-include_keywords = ["공고", "모집", "채용" "근로자" "노동자"]
+# 필터링 키워드
+include_keywords = ["공고", "모집", "채용"]
 
-# HTML 태그의 텍스트, 속성, 이미지 아이콘까지 전부 긁어와 검사하는 강력한 함수
+# HTML 태그의 텍스트, 속성, 이미지 아이콘 검사
 def is_valid_post(a_tag):
     texts = []
     
-    # 1. 툴팁(title) 속성 추출
     if a_tag.get('title'):
         texts.append(a_tag.get('title'))
         
-    # 2. 보여지는 텍스트 추출
     texts.append(a_tag.get_text(separator=' ', strip=True))
     
-    # 3. 이미지(아이콘)의 대체 텍스트 추출 (예: <img alt="공고">)
     for img in a_tag.find_all('img'):
         if img.get('alt'):
             texts.append(img.get('alt'))
             
-    # 하나로 합치고 공백 정리
     raw_title = ' '.join(texts)
     title_clean = re.sub(r'\s+', ' ', raw_title).strip()
     
-    # 글자 수가 너무 짧은 메뉴 버튼 등 제외
     if len(title_clean) < 4:
         return False, ""
         
-    # 지정된 키워드 포함 여부 검사
     if any(keyword in title_clean for keyword in include_keywords):
         return True, title_clean
         
@@ -77,9 +66,7 @@ def resolve_js_link(name, url, a_tag):
         
         if extracted_params:
             post_id = extracted_params[0]
-            if name == "대구미술관":
-                return f"https://daeguartmuseum.or.kr/index.do?menu_id=00000791&board_seq={post_id}"
-            elif name == "부산시립미술관":
+            if name == "부산시립미술관":
                 return f"https://art.busan.go.kr/anucmt/view.nm?id={post_id}"
             elif name == "청주시립미술관":
                 return f"https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?bbsNo=5&nttNo={post_id}&key=72"
@@ -102,32 +89,13 @@ def crawl_sites():
             else:
                 session.headers.update({'Referer': ''})
                 
-            # 📌 [특수 처리] 서울시립미술관은 API에서 JSON 데이터를 직접 추출
-            if name == "서울시립미술관":
-                api_url = "https://sema.seoul.go.kr/kr/bbs/611389/getBbsList"
-                res = session.get(api_url, verify=False, timeout=15)
-                data = res.json()
-                
-                # JSON 데이터에서 게시글 목록 가져오기
-                posts = data.get('list', []) or data.get('nttList', [])
-                for p in posts:
-                    title = p.get('nttSj', '')
-                    ntt_id = p.get('nttId', '')
-                    
-                    if any(kw in title for kw in include_keywords) and ntt_id:
-                        link = f"https://sema.seoul.go.kr/kr/bbs/611389/detail.nm?bbsId=611389&nttId={ntt_id}"
-                        if not any(i['link'] == link for i in results[name]):
-                            results[name].append({"title": title, "link": link})
-                continue # API 처리 후 다음 미술관으로 이동
-
-            # 일반 미술관 HTML 크롤링 시작
             response = session.get(url, verify=False, timeout=15)
             response.encoding = 'utf-8'
             soup = BeautifulSoup(response.text, 'html.parser')
             
             count = 0 
             for a_tag in soup.find_all('a'):
-                if count >= 30: # 넉넉하게 탐색
+                if count >= 30: 
                     break
                     
                 is_valid, clean_title = is_valid_post(a_tag)
