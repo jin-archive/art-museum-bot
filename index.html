@@ -4,32 +4,82 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>🏛️ 전국 공공미술관 게시판 모아보기</title>
+        <title>🏛️ 전국 공공미술관 채용 공고 모아보기</title>
         <style>
-            body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; max-width: 900px; margin: auto; }
-            .header { text-align: center; margin-bottom: 20px; }
-            .tab { overflow: hidden; border: 1px solid #ccc; background-color: #f1f1f1; display: flex; flex-wrap: wrap; }
-            .tab button { background-color: inherit; border: none; outline: none; cursor: pointer; padding: 10px 15px; transition: 0.3s; font-size: 14px; }
-            .tab button:hover { background-color: #ddd; }
-            .tab button.active { background-color: #007bff; color: white; font-weight: bold; }
-            .tabcontent { display: none; padding: 15px; border: 1px solid #ccc; border-top: none; animation: fadeEffect 0.5s; }
-            @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }
-            ul { list-style-type: none; padding: 0; }
-            li { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #eee; line-height: 1.5; }
+            /* 전체 스타일 - image_11.png의 깨끗하고 현대적인 분위기 재현 */
+            body { font-family: 'Malgun Gothic', sans-serif; padding: 0; margin: 0; color: #333; background-color: #fff; line-height: 1.6; }
             a { text-decoration: none; color: #333; }
-            a:hover { color: #007bff; font-weight: bold; text-decoration: underline; }
-            .empty { color: #999; font-style: italic; text-align: center; padding: 20px; }
-            .filter-info { background: #e9ecef; padding: 8px; border-radius: 5px; font-size: 13px; color: #495057; display: inline-block; margin-top: 10px; }
+            a:hover { color: #a17056; } /* 포인트 색상 */
+            
+            /* 헤더 스타일 */
+            .main-header { text-align: center; padding: 30px 0; border-bottom: 1px solid #eee; }
+            .main-header h1 { font-size: 28px; margin: 0; font-weight: normal; }
+            .main-header .stats { font-size: 14px; color: #888; margin-top: 10px; }
+            .main-header .stats strong { color: #a17056; font-weight: normal; } /* 포인트 색상 */
+            
+            /* 검색바 스타일 - 스타일만 구현 */
+            .search-bar { text-align: center; margin-top: 20px; }
+            .search-bar input[type="text"] { padding: 10px 15px; border: 1px solid #ddd; width: 300px; font-size: 14px; }
+            .search-bar button { padding: 10px 20px; border: none; background-color: #333; color: white; cursor: pointer; font-size: 14px; margin-left: 10px; }
+            .search-bar button:hover { background-color: #555; }
+            
+            /* 서브 메뉴 / 탭 스타일 - image_11.png의 텍스트 메뉴 스타일 */
+            .sub-menu { text-align: center; margin-top: 30px; border-bottom: 1px solid #eee; }
+            .sub-menu-inner { display: inline-block; padding-bottom: 20px; }
+            .tablinks { background-color: inherit; border: none; outline: none; cursor: pointer; padding: 10px 15px; transition: 0.3s; font-size: 14px; color: #888; margin: 0 5px; border-bottom: 2px solid transparent; }
+            .tablinks:hover { color: #333; }
+            .tablinks.active { color: #333; border-bottom-color: #a17056; font-weight: bold; } /* 활성화 시 포인트 색상 밑줄 */
+            
+            /* 콘텐츠 스타일 (테이블) */
+            .content-container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+            .tabcontent { display: none; }
+            
+            /* 테이블 스타일 - image_11.png 완벽 재현 */
+            .board-table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: center; }
+            .board-table th { border-top: 2px solid #333; border-bottom: 1px solid #eee; padding: 15px; font-weight: bold; color: #333; background-color: #f9f9f9; }
+            .board-table th:first-child { border-left: none; }
+            .board-table th:last-child { border-right: none; }
+            .board-table td { border-bottom: 1px solid #eee; padding: 15px; color: #666; }
+            .board-table td:nth-child(3) { text-align: left; } /* 제목은 왼쪽 정렬 */
+            .board-table tr:hover td { background-color: #f9f9f9; } /* 호버 시 배경색 */
+            
+            /* 드롭다운 스타일 - 스타일만 구현 */
+            .select-category { padding: 5px 10px; border: 1px solid #ddd; font-size: 12px; }
+            
+            /* 페이지네이션 스타일 - image_11.png 스타일만 구현 */
+            .pagination { text-align: center; margin-top: 40px; margin-bottom: 60px; }
+            .pagination-inner { display: inline-block; }
+            .pagination a, .pagination span { display: inline-block; width: 30px; height: 30px; line-height: 30px; border: 1px solid #eee; color: #666; font-size: 13px; margin: 0 3px; border-radius: 2px; }
+            .pagination a:hover { background-color: #f9f9f9; color: #333; }
+            .pagination .active { background-color: #a17056; color: white; border-color: #a17056; } /* 활성화 시 포인트 색상 */
+            
+            /* 푸터 스타일 - image_11.png 기반 심플 구현 */
+            .main-footer { background-color: #222; color: #888; padding: 50px 0; font-size: 12px; }
+            .footer-inner { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+            .footer-logo { font-size: 20px; font-weight: bold; color: white; margin-bottom: 20px; }
+            .footer-links { margin-bottom: 20px; }
+            .footer-links a { color: #ccc; margin-right: 20px; }
+            .footer-links a:hover { color: white; }
+            .footer-copyright { }
+            .footer-social { text-align: right; margin-top: -20px; }
+            .footer-social a { display: inline-block; width: 30px; height: 30px; border: 1px solid #555; border-radius: 50%; color: #888; line-height: 30px; text-align: center; margin-left: 10px; }
+            .footer-social a:hover { background-color: #555; color: white; }
         </style>
     </head>
     <body>
-        <div class="header">
-            <h2>🏛️ 전국 공공미술관 게시판 모아보기</h2>
-            <div class="filter-info">🔍 "공고", "모집", "채용"이 포함된 게시글이 표시됩니다.</div>
-            <p><small>업데이트 시간: 2026-03-26 14:54:04</small></p>
+        <div class="main-header">
+            <h1>NEWS</h1>
+            <div class="stats">총 🏛️ <strong>8</strong>개의 미술관에서 🏛️ <strong>74</strong>개의 채용 공고를 모았습니다.</div>
+            <div class="stats">마지막 업데이트: 🏛️ 2026-03-26 15:05:12</div>
+            
+            <div class="search-bar">
+                <input type="text" placeholder="검색어를 입력하세요.">
+                <button>Search</button>
+            </div>
         </div>
 
-        <div class="tab">
+        <div class="sub-menu">
+            <div class="sub-menu-inner">
     <button class="tablinks active" onclick="openTab(event, '경남도립미술관')">경남도립미술관</button>
 <button class="tablinks " onclick="openTab(event, '광주시립미술관')">광주시립미술관</button>
 <button class="tablinks " onclick="openTab(event, '대전시립미술관')">대전시립미술관</button>
@@ -38,123 +88,812 @@
 <button class="tablinks " onclick="openTab(event, '수원시립미술관')">수원시립미술관</button>
 <button class="tablinks " onclick="openTab(event, '전북도립미술관')">전북도립미술관</button>
 <button class="tablinks " onclick="openTab(event, '청주시립미술관')">청주시립미술관</button>
-</div>
 
-<div id="경남도립미술관" class="tabcontent" style="display:block">
-  <h3>경남도립미술관</h3>
-  <ul>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42364480" target="_blank">📄 공지 2026년 경남도립미술관 시설물 및 정원관리분야 기간제노동자 채용 최종합격자 공고 2026-03-20</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42355533" target="_blank">📄 2026년 경남도립미술관 시설물 및 정원관리 기간제노동자 채용 서류전형 결과 및 면접시험 시행계획 공고 2026-03-09</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42343447" target="_blank">📄 2026년 경남도립미술관 시설물 및 정원관리분야 기간제노동자 채용 공고 2026-02-23</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42343025" target="_blank">📄 경남도립미술관 서포터즈 <GAM알리러GAM> 모집 2026-02-20</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42329814" target="_blank">📄 2026년 경남도립미술관 기간제노동자(학예원) 채용 최종 합격자 공고 2025-12-19</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42328616" target="_blank">📄 2026년 경남도립미술관 전시실 관리 기간제노동자 채용 최종 합격자 공고 2025-12-12</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42328614" target="_blank">📄 2026년 경남도립미술관 청소원 기간제노동자 채용 최종 합격자 공고 2025-12-12</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42328038" target="_blank">📄 2026 경남도립미술관 기간제노동자(학예원) 채용 서류전형 합격자 및 면접시험 시행계획 공고 2025-12-10</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42324177" target="_blank">📄 경남도립미술관 기간제노동자(학예원) 채용 계획 공고 2025-11-25</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42323150" target="_blank">📄 2026년 경남도립미술관 청소원 기간제노동자 채용 서류전형 합격자 및 면접시험 시행계획 공고 2025-11-21</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42323149" target="_blank">📄 2026년 도립미술관 전시실 관리 기간제노동자 채용 서류전형 합격자 및 면접시험 시행계획 공고 2025-11-21</a></li>
-  </ul>
-</div>
-<div id="광주시립미술관" class="tabcontent" style="display:none">
-  <h3>광주시립미술관</h3>
-  <ul>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279538&movePage=1&boardID=NEWS" target="_blank">📄 2026 광주시립미술관 청년예술센터 「과정형 전시공간 지원사업」 참여 예술가 모집 공고(수정_서식...</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downZip&pageID=artmuse0501000000&boardID=NEWS&SEQ=279538&fileDownSEQ=24079,24080" target="_blank">📄 2026 광주시립미술관 청년예술센터 「과정형 전시공간 지원사업」 참여 예술가 모집 공고(수정_서식첨부).zip (압축파일 다운로드)</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279537&movePage=1&boardID=NEWS" target="_blank">📄 2026 광주시립미술관 학예연구실 기간제근로자 서류전형 합격자 및 면접시험 공고...</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279537&fileDownSEQ=24078" target="_blank">📄 2026 광주시립미술관 학예연구실 기간제근로자 서류전형 합격자 및 면접시험 공고.hwp (파일 다운로드)</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279536&movePage=1&boardID=NEWS" target="_blank">📄 2026년 시립미술관 주차관리 단시간근로자 채용 최종 합격자 공고</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279536&fileDownSEQ=24069" target="_blank">📄 2026년 시립미술관 주차관리 단시간근로자 최종 합격자 공고.hwp (파일 다운로드)</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279535&movePage=1&boardID=NEWS" target="_blank">📄 2026년 시립미술관 주차관리 단시간근로자 채용 서류전형 합격자 및 면접시험 시행계획 공고...</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279535&fileDownSEQ=24066" target="_blank">📄 2026년 시립미술관 단시간근로자 서류전형 합격자 및 면접시험 공고.hwp (파일 다운로드)</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279534&movePage=1&boardID=NEWS" target="_blank">📄 광주시립미술관 학예연구,아카이브 기간제근로자 채용 공고</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279534&fileDownSEQ=24051" target="_blank">📄 광주시립미술관 학예연구,아카이브 기간제근로자 채용 공고.hwp (파일 다운로드)</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279533&movePage=1&boardID=NEWS" target="_blank">📄 2026년 광주시립미술관 국제교류 파견작가 모집 최종선정자 및 선정후보자 공고...</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279533&fileDownSEQ=24050" target="_blank">📄 2026년 광주시립미술관 국제교류 파견작가 모집 최종선정자 및 선정후보자 공고.pdf (파일 다운로드)</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279532&movePage=1&boardID=NEWS" target="_blank">📄 2026년 광주시립미술관 국제레지던시 입주작가 모집 최종선정자 공고</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279532&fileDownSEQ=24049" target="_blank">📄 2026년 광주시립미술관 국제레지던시 입주작가 모집 최종선정자 공고문.pdf (파일 다운로드)</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279531&movePage=1&boardID=NEWS" target="_blank">📄 2026 청년예술센터 입주예술인 모집 최종선정자 및 예비선정자 공고</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279531&fileDownSEQ=24046" target="_blank">📄 2026 청년예술센터 입주예술인 모집 최종선정자 및 예비선정자 공고.hwp (파일 다운로드)</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279530&movePage=1&boardID=NEWS" target="_blank">📄 2026년 광주시립미술관 청년예술센터 청소관리 기간제근로자 최종 합격자 공고...</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279530&fileDownSEQ=24041" target="_blank">📄 최종 합격자 공고(청년예술센터 청소관리 기간제근로자).hwp (파일 다운로드)</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279529&movePage=1&boardID=NEWS" target="_blank">📄 2026년도 시립미술관 주차관리 단시간근로자(주말 및 공휴일) 채용 공고(재공고 사유 : 첨부파일의 공...</a></li>
-    <li><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279529&fileDownSEQ=24042" target="_blank">📄 2026년도 단시간근로자 채용 공고문.hwp (파일 다운로드)</a></li>
-  </ul>
-</div>
-<div id="대전시립미술관" class="tabcontent" style="display:none">
-  <h3>대전시립미술관</h3>
-  <ul>
-    <li><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106160&usrMenuCd=0601000000&pageIndex=1" target="_blank">📄 공지 2026 대전시립미술관 버스킹 상시모집</a></li>
-    <li><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106467&usrMenuCd=0601000000&pageIndex=1" target="_blank">📄 채용 2026년 대전시립미술관 교육강사 서류전형 합격자 발표 및 면접시험 시행계획 공고</a></li>
-    <li><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106461&usrMenuCd=0601000000&pageIndex=1" target="_blank">📄 채용 2026년 기간제근로자(기록물관리원) 최종합격자 공고</a></li>
-    <li><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106450&usrMenuCd=0601000000&pageIndex=1" target="_blank">📄 채용 기간제근로자(기록물관리원) 3차 채용 서류전형 합격자 발표 및 면접시험 시행계획 공고</a></li>
-    <li><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106447&usrMenuCd=0601000000&pageIndex=1" target="_blank">📄 대관 2026년도 대전시립미술관 생활문화센터 대관 공고</a></li>
-    <li><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106439&usrMenuCd=0601000000&pageIndex=1" target="_blank">📄 채용 2026년 대전시립미술관 교육강사 모집 공고</a></li>
-  </ul>
-</div>
-<div id="부산시립미술관" class="tabcontent" style="display:none">
-  <h3>부산시립미술관</h3>
-  <ul>
-    <li><a href="https://art.busan.go.kr/anucmt/list.nm" target="_blank">📄 선택됨 고시공고</a></li>
-    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=93" target="_blank">📄 2026년 부산시립미술관 학예연구실 기간제근로자(코디네이터) 최종합격자 공고</a></li>
-    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=92" target="_blank">📄 2026년 부산시립미술관 학예연구실 코디네이터 서류전형 합격자 및 면접일정 공고</a></li>
-    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=91" target="_blank">📄 2026년 부산시립미술관 예비큐레이터 서류전형 합격자 및 면접일정 공고</a></li>
-    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=90" target="_blank">📄 2026년 부산시립미술관 예비큐레이터 모집 공고</a></li>
-    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=85" target="_blank">📄 2026년 부산시립미술관 학예연구실 코디네이터 서류전형 합격자 및 면접일정 공고</a></li>
-    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=84" target="_blank">📄 2026년 부산시립미술관 소장품자료연구팀 예비큐레이터 채용 서류전형 합격자 및 면접일정</a></li>
-    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=89" target="_blank">📄 2026년 부산시립미술관 학예연구실 기간제근로자(코디네이터) 모집 공고</a></li>
-    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=88" target="_blank">📄 2026년 부산시립미술관 예비큐레이터 모집 공고</a></li>
-    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=87" target="_blank">📄 2026년 부산시립미술관 학예연구실 기간제근로자(코디네이터) 최종합격자 공고</a></li>
-    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=86" target="_blank">📄 2026년 부산시립미술관 예비큐레이터 채용 최종합격자 발표</a></li>
-  </ul>
-</div>
-<div id="부산현대미술관" class="tabcontent" style="display:none">
-  <h3>부산현대미술관</h3>
-  <ul>
-    <li><a href="https://www.busan.go.kr/moca/news01/1717826?curPage=&srchBeginDt=2025-03-26&srchEndDt=2026-03-26&searchKey=&searchText=" target="_blank">📄 2026년 부산현대미술관 소장품 구입 공고</a></li>
-    <li><a href="https://www.busan.go.kr/moca/news01/1714936?curPage=&srchBeginDt=2025-03-26&srchEndDt=2026-03-26&searchKey=&searchText=" target="_blank">📄 《2026 부산현대미술관 플랫폼_공생 직조》 전시 그룹 공모전 모집 공고</a></li>
-    <li><a href="https://www.busan.go.kr/moca/news01/1721172?curPage=&srchBeginDt=2025-03-26&srchEndDt=2026-03-26&srchKey=&srchText=" target="_blank">📄 2026년 부산현대미술관 기간제근로자(공무직 대체인력) 최종 합격자 공고</a></li>
-    <li><a href="https://www.busan.go.kr/moca/news01/1718842?curPage=&srchBeginDt=2025-03-26&srchEndDt=2026-03-26&srchKey=&srchText=" target="_blank">📄 2026년 부산현대미술관 기간제근로자(공무직 대체인력) 서류전형 합격자 공고</a></li>
-    <li><a href="https://www.busan.go.kr/moca/news01/1717528?curPage=&srchBeginDt=2025-03-26&srchEndDt=2026-03-26&srchKey=&srchText=" target="_blank">📄 2026년 부산현대미술관 서포터즈(자원봉사자) 최종 합격자 공고</a></li>
-    <li><a href="https://www.busan.go.kr/moca/news01/1716897?curPage=&srchBeginDt=2025-03-26&srchEndDt=2026-03-26&srchKey=&srchText=" target="_blank">📄 부산현대미술관 기간제근로자(공무직 대체인력) 채용 공고</a></li>
-  </ul>
-</div>
-<div id="수원시립미술관" class="tabcontent" style="display:none">
-  <h3>수원시립미술관</h3>
-  <ul>
-    <li><a href="https://suma.suwon.go.kr/news/news_list.do#none" target="_blank">📄 2026 수원시립아트스페이스광교 기간제 노동자(전시 코디네이터) 채용 공고</a></li>
-  </ul>
-</div>
-<div id="전북도립미술관" class="tabcontent" style="display:none">
-  <h3>전북도립미술관</h3>
-  <ul>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12246" target="_blank">📄 2026년 전북특별자치도립미술관 소장작품 구입 공고</a></li>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12223" target="_blank">📄 전북도립미술관 전시실 자원봉사자 모집 공고</a></li>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12221" target="_blank">📄 2026년도 전북도립미술관 주요사업 공고 일정 안내</a></li>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12219" target="_blank">📄 2025년 제8차 학예연구원(학예사 인턴) 채용 최종 합격자 발표</a></li>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12218" target="_blank">📄 전북특별자치도립미술관 기간제근로자 채용 재공고</a></li>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12217" target="_blank">📄 2025년 제8차 학예연구원(학예사 인턴) 채용 서류전형 합격자 공고</a></li>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12216" target="_blank">📄 2025년 제8차 학예연구원(학예사 인턴) 채용 공고</a></li>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12214" target="_blank">📄 전북특별자치도립미술관 기간제근로자 채용 공고</a></li>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12206" target="_blank">📄 2025년 전북도청 전시실 수시대관 공고</a></li>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12205" target="_blank">📄 《전북청년 2026》 최종 선정결과 공고</a></li>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12190" target="_blank">📄 《전북청년 2026》작가 모집 면접대상자 안내</a></li>
-    <li><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12177" target="_blank">📄 2025년 제7차 학예연구원(학예사 인턴) 채용 최종 합격자 발표</a></li>
-  </ul>
-</div>
-<div id="청주시립미술관" class="tabcontent" style="display:none">
-  <h3>청주시립미술관</h3>
-  <ul>
-    <li><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2328&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">📄 2026 청주시립미술관 학예보조 기간제근로자 추가 합격자 공고</a></li>
-    <li><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2327&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">📄 2026년 청주시립미술관 학예보조 기간제근로자 채용 최종 합격자 및 서류제출 안내</a></li>
-    <li><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2323&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">📄 2026년 청주시립미술관 학예보조 기간제근로자 채용 서류합격자 및 면접계획 공고</a></li>
-    <li><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2319&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">📄 2026년 청주시립미술관 학예보조 기간제근로자 채용 공고</a></li>
-    <li><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2252&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">📄 2025년 청주시립미술관 <오창전시관> 정기대관 재공고</a></li>
-    <li><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2336&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">📄 2026 청주시립미술관 홍보 서포터즈 모집</a></li>
-    <li><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2295&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">📄 2025 청주시립미술관 청소년 도슨트 양성 프로그램 참가자 모집(제1기)(~10.10까지)</a></li>
-  </ul>
-</div>
+            </div>
+        </div>
 
+        <div class="content-container">
+    <div id="경남도립미술관" class="tabcontent" style="display:block">
+  <h3 style="margin-top: 0; margin-bottom: 20px;">경남도립미술관 채용 공고</h3>
+
+            <table class="board-table">
+                <thead>
+                    <tr>
+                        <th width="80">NO</th>
+                        <th width="120">
+                            <select class="select-category">
+                                <option>분류</option>
+                                <option>채용/모집</option>
+                            </select>
+                        </th>
+                        <th>제목</th>
+                        <th width="120">작성일</th>
+                        <th width="100">조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42364480" target="_blank">공지 2026년 경남도립미술관 시설물 및 정원관리분야 기간제노동자 채용 최종합격자 공고 2026-03-20</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>2</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42355533" target="_blank">2026년 경남도립미술관 시설물 및 정원관리 기간제노동자 채용 서류전형 결과 및 면접시험 시행계획 공고 2026-03-09</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>3</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42343447" target="_blank">2026년 경남도립미술관 시설물 및 정원관리분야 기간제노동자 채용 공고 2026-02-23</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>4</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42343025" target="_blank">경남도립미술관 서포터즈 <GAM알리러GAM> 모집 2026-02-20</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>5</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42329814" target="_blank">2026년 경남도립미술관 기간제노동자(학예원) 채용 최종 합격자 공고 2025-12-19</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>6</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42328616" target="_blank">2026년 경남도립미술관 전시실 관리 기간제노동자 채용 최종 합격자 공고 2025-12-12</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>7</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42328614" target="_blank">2026년 경남도립미술관 청소원 기간제노동자 채용 최종 합격자 공고 2025-12-12</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>8</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42328038" target="_blank">2026 경남도립미술관 기간제노동자(학예원) 채용 서류전형 합격자 및 면접시험 시행계획 공고 2025-12-10</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>9</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42324177" target="_blank">경남도립미술관 기간제노동자(학예원) 채용 계획 공고 2025-11-25</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>10</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42323150" target="_blank">2026년 경남도립미술관 청소원 기간제노동자 채용 서류전형 합격자 및 면접시험 시행계획 공고 2025-11-21</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>11</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42323149" target="_blank">2026년 도립미술관 전시실 관리 기간제노동자 채용 서류전형 합격자 및 면접시험 시행계획 공고 2025-11-21</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                </tbody>
+            </table>
+        </div>
+        <div id="광주시립미술관" class="tabcontent" style="display:none">
+  <h3 style="margin-top: 0; margin-bottom: 20px;">광주시립미술관 채용 공고</h3>
+
+            <table class="board-table">
+                <thead>
+                    <tr>
+                        <th width="80">NO</th>
+                        <th width="120">
+                            <select class="select-category">
+                                <option>분류</option>
+                                <option>채용/모집</option>
+                            </select>
+                        </th>
+                        <th>제목</th>
+                        <th width="120">작성일</th>
+                        <th width="100">조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279538&movePage=1&boardID=NEWS" target="_blank">2026 광주시립미술관 청년예술센터 「과정형 전시공간 지원사업」 참여 예술가 모집 공고(수정_서식...</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>2</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downZip&pageID=artmuse0501000000&boardID=NEWS&SEQ=279538&fileDownSEQ=24079,24080" target="_blank">2026 광주시립미술관 청년예술센터 「과정형 전시공간 지원사업」 참여 예술가 모집 공고(수정_서식첨부).zip (압축파일 다운로드)</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>3</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279537&movePage=1&boardID=NEWS" target="_blank">2026 광주시립미술관 학예연구실 기간제근로자 서류전형 합격자 및 면접시험 공고...</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>4</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279537&fileDownSEQ=24078" target="_blank">2026 광주시립미술관 학예연구실 기간제근로자 서류전형 합격자 및 면접시험 공고.hwp (파일 다운로드)</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>5</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279536&movePage=1&boardID=NEWS" target="_blank">2026년 시립미술관 주차관리 단시간근로자 채용 최종 합격자 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>6</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279536&fileDownSEQ=24069" target="_blank">2026년 시립미술관 주차관리 단시간근로자 최종 합격자 공고.hwp (파일 다운로드)</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>7</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279535&movePage=1&boardID=NEWS" target="_blank">2026년 시립미술관 주차관리 단시간근로자 채용 서류전형 합격자 및 면접시험 시행계획 공고...</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>8</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279535&fileDownSEQ=24066" target="_blank">2026년 시립미술관 단시간근로자 서류전형 합격자 및 면접시험 공고.hwp (파일 다운로드)</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>9</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279534&movePage=1&boardID=NEWS" target="_blank">광주시립미술관 학예연구,아카이브 기간제근로자 채용 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>10</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279534&fileDownSEQ=24051" target="_blank">광주시립미술관 학예연구,아카이브 기간제근로자 채용 공고.hwp (파일 다운로드)</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>11</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279533&movePage=1&boardID=NEWS" target="_blank">2026년 광주시립미술관 국제교류 파견작가 모집 최종선정자 및 선정후보자 공고...</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>12</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279533&fileDownSEQ=24050" target="_blank">2026년 광주시립미술관 국제교류 파견작가 모집 최종선정자 및 선정후보자 공고.pdf (파일 다운로드)</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>13</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279532&movePage=1&boardID=NEWS" target="_blank">2026년 광주시립미술관 국제레지던시 입주작가 모집 최종선정자 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>14</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279532&fileDownSEQ=24049" target="_blank">2026년 광주시립미술관 국제레지던시 입주작가 모집 최종선정자 공고문.pdf (파일 다운로드)</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>15</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279531&movePage=1&boardID=NEWS" target="_blank">2026 청년예술센터 입주예술인 모집 최종선정자 및 예비선정자 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>16</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279531&fileDownSEQ=24046" target="_blank">2026 청년예술센터 입주예술인 모집 최종선정자 및 예비선정자 공고.hwp (파일 다운로드)</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>17</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279530&movePage=1&boardID=NEWS" target="_blank">2026년 광주시립미술관 청년예술센터 청소관리 기간제근로자 최종 합격자 공고...</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>18</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279530&fileDownSEQ=24041" target="_blank">최종 합격자 공고(청년예술센터 청소관리 기간제근로자).hwp (파일 다운로드)</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>19</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=view&pageID=artmuse0501000000&SEQ=279529&movePage=1&boardID=NEWS" target="_blank">2026년도 시립미술관 주차관리 단시간근로자(주말 및 공휴일) 채용 공고(재공고 사유 : 첨부파일의 공...</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>20</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://artmuse.gwangju.go.kr/bb/bbBoard.php?action=downLoad&pageID=artmuse0501000000&boardID=NEWS&SEQ=279529&fileDownSEQ=24042" target="_blank">2026년도 단시간근로자 채용 공고문.hwp (파일 다운로드)</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                </tbody>
+            </table>
+        </div>
+        <div id="대전시립미술관" class="tabcontent" style="display:none">
+  <h3 style="margin-top: 0; margin-bottom: 20px;">대전시립미술관 채용 공고</h3>
+
+            <table class="board-table">
+                <thead>
+                    <tr>
+                        <th width="80">NO</th>
+                        <th width="120">
+                            <select class="select-category">
+                                <option>분류</option>
+                                <option>채용/모집</option>
+                            </select>
+                        </th>
+                        <th>제목</th>
+                        <th width="120">작성일</th>
+                        <th width="100">조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106160&usrMenuCd=0601000000&pageIndex=1" target="_blank">공지 2026 대전시립미술관 버스킹 상시모집</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>2</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106467&usrMenuCd=0601000000&pageIndex=1" target="_blank">채용 2026년 대전시립미술관 교육강사 서류전형 합격자 발표 및 면접시험 시행계획 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>3</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106461&usrMenuCd=0601000000&pageIndex=1" target="_blank">채용 2026년 기간제근로자(기록물관리원) 최종합격자 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>4</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106450&usrMenuCd=0601000000&pageIndex=1" target="_blank">채용 기간제근로자(기록물관리원) 3차 채용 서류전형 합격자 발표 및 면접시험 시행계획 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>5</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106447&usrMenuCd=0601000000&pageIndex=1" target="_blank">대관 2026년도 대전시립미술관 생활문화센터 대관 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>6</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106439&usrMenuCd=0601000000&pageIndex=1" target="_blank">채용 2026년 대전시립미술관 교육강사 모집 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                </tbody>
+            </table>
+        </div>
+        <div id="부산시립미술관" class="tabcontent" style="display:none">
+  <h3 style="margin-top: 0; margin-bottom: 20px;">부산시립미술관 채용 공고</h3>
+
+            <table class="board-table">
+                <thead>
+                    <tr>
+                        <th width="80">NO</th>
+                        <th width="120">
+                            <select class="select-category">
+                                <option>분류</option>
+                                <option>채용/모집</option>
+                            </select>
+                        </th>
+                        <th>제목</th>
+                        <th width="120">작성일</th>
+                        <th width="100">조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://art.busan.go.kr/anucmt/list.nm" target="_blank">선택됨 고시공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>2</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://art.busan.go.kr/anucmt/view.nm?id=93" target="_blank">2026년 부산시립미술관 학예연구실 기간제근로자(코디네이터) 최종합격자 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>3</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://art.busan.go.kr/anucmt/view.nm?id=92" target="_blank">2026년 부산시립미술관 학예연구실 코디네이터 서류전형 합격자 및 면접일정 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>4</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://art.busan.go.kr/anucmt/view.nm?id=91" target="_blank">2026년 부산시립미술관 예비큐레이터 서류전형 합격자 및 면접일정 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>5</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://art.busan.go.kr/anucmt/view.nm?id=90" target="_blank">2026년 부산시립미술관 예비큐레이터 모집 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>6</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://art.busan.go.kr/anucmt/view.nm?id=85" target="_blank">2026년 부산시립미술관 학예연구실 코디네이터 서류전형 합격자 및 면접일정 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>7</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://art.busan.go.kr/anucmt/view.nm?id=84" target="_blank">2026년 부산시립미술관 소장품자료연구팀 예비큐레이터 채용 서류전형 합격자 및 면접일정</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>8</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://art.busan.go.kr/anucmt/view.nm?id=89" target="_blank">2026년 부산시립미술관 학예연구실 기간제근로자(코디네이터) 모집 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>9</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://art.busan.go.kr/anucmt/view.nm?id=88" target="_blank">2026년 부산시립미술관 예비큐레이터 모집 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>10</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://art.busan.go.kr/anucmt/view.nm?id=87" target="_blank">2026년 부산시립미술관 학예연구실 기간제근로자(코디네이터) 최종합격자 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>11</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://art.busan.go.kr/anucmt/view.nm?id=86" target="_blank">2026년 부산시립미술관 예비큐레이터 채용 최종합격자 발표</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                </tbody>
+            </table>
+        </div>
+        <div id="부산현대미술관" class="tabcontent" style="display:none">
+  <h3 style="margin-top: 0; margin-bottom: 20px;">부산현대미술관 채용 공고</h3>
+
+            <table class="board-table">
+                <thead>
+                    <tr>
+                        <th width="80">NO</th>
+                        <th width="120">
+                            <select class="select-category">
+                                <option>분류</option>
+                                <option>채용/모집</option>
+                            </select>
+                        </th>
+                        <th>제목</th>
+                        <th width="120">작성일</th>
+                        <th width="100">조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.busan.go.kr/moca/news01/1717826?curPage=&srchBeginDt=2025-03-27&srchEndDt=2026-03-27&searchKey=&searchText=" target="_blank">2026년 부산현대미술관 소장품 구입 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>2</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.busan.go.kr/moca/news01/1714936?curPage=&srchBeginDt=2025-03-27&srchEndDt=2026-03-27&searchKey=&searchText=" target="_blank">《2026 부산현대미술관 플랫폼_공생 직조》 전시 그룹 공모전 모집 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>3</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.busan.go.kr/moca/news01/1721172?curPage=&srchBeginDt=2025-03-27&srchEndDt=2026-03-27&srchKey=&srchText=" target="_blank">2026년 부산현대미술관 기간제근로자(공무직 대체인력) 최종 합격자 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>4</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.busan.go.kr/moca/news01/1718842?curPage=&srchBeginDt=2025-03-27&srchEndDt=2026-03-27&srchKey=&srchText=" target="_blank">2026년 부산현대미술관 기간제근로자(공무직 대체인력) 서류전형 합격자 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>5</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.busan.go.kr/moca/news01/1717528?curPage=&srchBeginDt=2025-03-27&srchEndDt=2026-03-27&srchKey=&srchText=" target="_blank">2026년 부산현대미술관 서포터즈(자원봉사자) 최종 합격자 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>6</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.busan.go.kr/moca/news01/1716897?curPage=&srchBeginDt=2025-03-27&srchEndDt=2026-03-27&srchKey=&srchText=" target="_blank">부산현대미술관 기간제근로자(공무직 대체인력) 채용 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                </tbody>
+            </table>
+        </div>
+        <div id="수원시립미술관" class="tabcontent" style="display:none">
+  <h3 style="margin-top: 0; margin-bottom: 20px;">수원시립미술관 채용 공고</h3>
+
+            <table class="board-table">
+                <thead>
+                    <tr>
+                        <th width="80">NO</th>
+                        <th width="120">
+                            <select class="select-category">
+                                <option>분류</option>
+                                <option>채용/모집</option>
+                            </select>
+                        </th>
+                        <th>제목</th>
+                        <th width="120">작성일</th>
+                        <th width="100">조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://suma.suwon.go.kr/news/news_list.do#none" target="_blank">2026 수원시립아트스페이스광교 기간제 노동자(전시 코디네이터) 채용 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                </tbody>
+            </table>
+        </div>
+        <div id="전북도립미술관" class="tabcontent" style="display:none">
+  <h3 style="margin-top: 0; margin-bottom: 20px;">전북도립미술관 채용 공고</h3>
+
+            <table class="board-table">
+                <thead>
+                    <tr>
+                        <th width="80">NO</th>
+                        <th width="120">
+                            <select class="select-category">
+                                <option>분류</option>
+                                <option>채용/모집</option>
+                            </select>
+                        </th>
+                        <th>제목</th>
+                        <th width="120">작성일</th>
+                        <th width="100">조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12246" target="_blank">2026년 전북특별자치도립미술관 소장작품 구입 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>2</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12223" target="_blank">전북도립미술관 전시실 자원봉사자 모집 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>3</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12221" target="_blank">2026년도 전북도립미술관 주요사업 공고 일정 안내</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>4</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12219" target="_blank">2025년 제8차 학예연구원(학예사 인턴) 채용 최종 합격자 발표</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>5</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12218" target="_blank">전북특별자치도립미술관 기간제근로자 채용 재공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>6</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12217" target="_blank">2025년 제8차 학예연구원(학예사 인턴) 채용 서류전형 합격자 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>7</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12216" target="_blank">2025년 제8차 학예연구원(학예사 인턴) 채용 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>8</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12214" target="_blank">전북특별자치도립미술관 기간제근로자 채용 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>9</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12206" target="_blank">2025년 전북도청 전시실 수시대관 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>10</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12205" target="_blank">《전북청년 2026》 최종 선정결과 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>11</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12190" target="_blank">《전북청년 2026》작가 모집 면접대상자 안내</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>12</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://www.jma.go.kr/bbs/board.php?bo_id=notice&wr_id=12177" target="_blank">2025년 제7차 학예연구원(학예사 인턴) 채용 최종 합격자 발표</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                </tbody>
+            </table>
+        </div>
+        <div id="청주시립미술관" class="tabcontent" style="display:none">
+  <h3 style="margin-top: 0; margin-bottom: 20px;">청주시립미술관 채용 공고</h3>
+
+            <table class="board-table">
+                <thead>
+                    <tr>
+                        <th width="80">NO</th>
+                        <th width="120">
+                            <select class="select-category">
+                                <option>분류</option>
+                                <option>채용/모집</option>
+                            </select>
+                        </th>
+                        <th>제목</th>
+                        <th width="120">작성일</th>
+                        <th width="100">조회수</th>
+                    </tr>
+                </thead>
+                <tbody>
+        
+                    <tr>
+                        <td>1</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2328&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">2026 청주시립미술관 학예보조 기간제근로자 추가 합격자 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>2</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2327&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">2026년 청주시립미술관 학예보조 기간제근로자 채용 최종 합격자 및 서류제출 안내</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>3</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2323&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">2026년 청주시립미술관 학예보조 기간제근로자 채용 서류합격자 및 면접계획 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>4</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2319&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">2026년 청주시립미술관 학예보조 기간제근로자 채용 공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>5</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2252&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">2025년 청주시립미술관 <오창전시관> 정기대관 재공고</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>6</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2336&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">2026 청주시립미술관 홍보 서포터즈 모집</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                    <tr>
+                        <td>7</td>
+                        <td>구인/구직</td>
+                        <td><a href="https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?key=72&bbsNo=5&nttNo=2295&searchCtgry=&searchCnd=all&searchKrwd=&pageIndex=1&integrDeptCode=" target="_blank">2025 청주시립미술관 청소년 도슨트 양성 프로그램 참가자 모집(제1기)(~10.10까지)</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                
+                </tbody>
+            </table>
+        </div>
+        
+        </div>
+
+        <div class="pagination">
+            <div class="pagination-inner">
+                <a href="#" class="active">1</a>
+                <a href="#">2</a>
+                <a href="#">3</a>
+                <a href="#">다음</a>
+            </div>
+        </div>
+
+        <div class="main-footer">
+            <div class="footer-inner">
+                <div class="footer-links">
+                    <a href="#">회사소개</a>
+                    <a href="#">이용약관</a>
+                    <a href="#">개인정보처리방침</a>
+                </div>
+                <div class="footer-copyright">
+                    © 2026 Art Job Board. All Rights Reserved.
+                </div>
+            </div>
+        </div>
+    
         <script>
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
