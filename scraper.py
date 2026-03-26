@@ -116,6 +116,7 @@ def crawl_sites():
     return results
 
 def generate_html(data):
+    # HTML 생성 템플릿 (디자인 변경 요청 반영: image_11.png 스타일)
     update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     html = f"""
@@ -124,85 +125,115 @@ def generate_html(data):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>🏛️ 전국 공공미술관 게시판 모아보기</title>
+        <title>🏛️ 전국 공공미술관 채용 공고 모아보기</title>
         <style>
-            body {{ font-family: 'Malgun Gothic', sans-serif; padding: 20px; max-width: 900px; margin: auto; }}
-            .header {{ text-align: center; margin-bottom: 20px; }}
-            .tab {{ overflow: hidden; border: 1px solid #ccc; background-color: #f1f1f1; display: flex; flex-wrap: wrap; }}
-            .tab button {{ background-color: inherit; border: none; outline: none; cursor: pointer; padding: 10px 15px; transition: 0.3s; font-size: 14px; }}
-            .tab button:hover {{ background-color: #ddd; }}
-            .tab button.active {{ background-color: #007bff; color: white; font-weight: bold; }}
-            .tabcontent {{ display: none; padding: 15px; border: 1px solid #ccc; border-top: none; animation: fadeEffect 0.5s; }}
-            @keyframes fadeEffect {{ from {{opacity: 0;}} to {{opacity: 1;}} }}
-            ul {{ list-style-type: none; padding: 0; }}
-            li {{ margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #eee; line-height: 1.5; }}
+            /* 전체 스타일 - image_11.png의 깨끗하고 현대적인 분위기 재현 */
+            body {{ font-family: 'Malgun Gothic', sans-serif; padding: 0; margin: 0; color: #333; background-color: #fff; line-height: 1.6; }}
             a {{ text-decoration: none; color: #333; }}
-            a:hover {{ color: #007bff; font-weight: bold; text-decoration: underline; }}
-            .empty {{ color: #999; font-style: italic; text-align: center; padding: 20px; }}
-            .filter-info {{ background: #e9ecef; padding: 8px; border-radius: 5px; font-size: 13px; color: #495057; display: inline-block; margin-top: 10px; }}
+            a:hover {{ color: #a17056; }} /* 포인트 색상 */
+            
+            /* 헤더 스타일 */
+            .main-header {{ text-align: center; padding: 30px 0; border-bottom: 1px solid #eee; }}
+            .main-header h1 {{ font-size: 28px; margin: 0; font-weight: normal; }}
+            .main-header .stats {{ font-size: 14px; color: #888; margin-top: 10px; }}
+            .main-header .stats strong {{ color: #a17056; font-weight: normal; }} /* 포인트 색상 */
+            
+            /* 검색바 스타일 - 스타일만 구현 */
+            .search-bar {{ text-align: center; margin-top: 20px; }}
+            .search-bar input[type="text"] {{ padding: 10px 15px; border: 1px solid #ddd; width: 300px; font-size: 14px; }}
+            .search-bar button {{ padding: 10px 20px; border: none; background-color: #333; color: white; cursor: pointer; font-size: 14px; margin-left: 10px; }}
+            .search-bar button:hover {{ background-color: #555; }}
+            
+            /* 서브 메뉴 / 탭 스타일 - image_11.png의 텍스트 메뉴 스타일 */
+            .sub-menu {{ text-align: center; margin-top: 30px; border-bottom: 1px solid #eee; }}
+            .sub-menu-inner {{ display: inline-block; padding-bottom: 20px; }}
+            .tablinks {{ background-color: inherit; border: none; outline: none; cursor: pointer; padding: 10px 15px; transition: 0.3s; font-size: 14px; color: #888; margin: 0 5px; border-bottom: 2px solid transparent; }}
+            .tablinks:hover {{ color: #333; }}
+            .tablinks.active {{ color: #333; border-bottom-color: #a17056; font-weight: bold; }} /* 활성화 시 포인트 색상 밑줄 */
+            
+            /* 콘텐츠 스타일 (테이블) */
+            .content-container {{ max-width: 1000px; margin: 40px auto; padding: 0 20px; }}
+            .tabcontent {{ display: none; }}
+            
+            /* 테이블 스타일 - image_11.png 완벽 재현 */
+            .board-table {{ width: 100%; border-collapse: collapse; font-size: 14px; text-align: center; }}
+            .board-table th {{ border-top: 2px solid #333; border-bottom: 1px solid #eee; padding: 15px; font-weight: bold; color: #333; background-color: #f9f9f9; }}
+            .board-table th:first-child {{ border-left: none; }}
+            .board-table th:last-child {{ border-right: none; }}
+            .board-table td {{ border-bottom: 1px solid #eee; padding: 15px; color: #666; }}
+            .board-table td:nth-child(3) {{ text-align: left; }} /* 제목은 왼쪽 정렬 */
+            .board-table tr:hover td {{ background-color: #f9f9f9; }} /* 호버 시 배경색 */
+            
+            /* 드롭다운 스타일 - 스타일만 구현 */
+            .select-category {{ padding: 5px 10px; border: 1px solid #ddd; font-size: 12px; }}
+            
+            /* 페이지네이션 스타일 - image_11.png 스타일만 구현 */
+            .pagination {{ text-align: center; margin-top: 40px; margin-bottom: 60px; }}
+            .pagination-inner {{ display: inline-block; }}
+            .pagination a, .pagination span {{ display: inline-block; width: 30px; height: 30px; line-height: 30px; border: 1px solid #eee; color: #666; font-size: 13px; margin: 0 3px; border-radius: 2px; }}
+            .pagination a:hover {{ background-color: #f9f9f9; color: #333; }}
+            .pagination .active {{ background-color: #a17056; color: white; border-color: #a17056; }} /* 활성화 시 포인트 색상 */
+            
+            /* 푸터 스타일 - image_11.png 기반 심플 구현 */
+            .main-footer {{ background-color: #222; color: #888; padding: 50px 0; font-size: 12px; }}
+            .footer-inner {{ max-width: 1000px; margin: 0 auto; padding: 0 20px; }}
+            .footer-logo {{ font-size: 20px; font-weight: bold; color: white; margin-bottom: 20px; }}
+            .footer-links {{ margin-bottom: 20px; }}
+            .footer-links a {{ color: #ccc; margin-right: 20px; }}
+            .footer-links a:hover {{ color: white; }}
+            .footer-copyright {{ }}
+            .footer-social {{ text-align: right; margin-top: -20px; }}
+            .footer-social a {{ display: inline-block; width: 30px; height: 30px; border: 1px solid #555; border-radius: 50%; color: #888; line-height: 30px; text-align: center; margin-left: 10px; }}
+            .footer-social a:hover {{ background-color: #555; color: white; }}
         </style>
     </head>
     <body>
-        <div class="header">
-            <h2>🏛️ 전국 공공미술관 게시판 모아보기</h2>
-            <div class="filter-info">🔍 "공고", "모집", "채용"이 포함된 게시글이 표시됩니다.</div>
-            <p><small>업데이트 시간: {update_time}</small></p>
+        <div class="main-header">
+            <h1>NEWS</h1>
+            <div class="stats">총 🏛️ <strong>{len(data.keys())}</strong>개의 미술관에서 🏛️ <strong>{sum(len(posts) for posts in data.values())}</strong>개의 채용 공고를 모았습니다.</div>
+            <div class="stats">마지막 업데이트: 🏛️ {update_time}</div>
+            
+            <div class="search-bar">
+                <input type="text" placeholder="검색어를 입력하세요.">
+                <button>Search</button>
+            </div>
         </div>
 
-        <div class="tab">
+        <div class="sub-menu">
+            <div class="sub-menu-inner">
     """
     
+    # 탭 버튼 생성 (가나다순) - sub-menu 영역에 배치
     for i, name in enumerate(data.keys()):
         active_class = "active" if i == 0 else ""
         html += f'<button class="tablinks {active_class}" onclick="openTab(event, \'{name}\')">{name}</button>\n'
         
-    html += "</div>\n\n"
+    html += """
+            </div>
+        </div>
+
+        <div class="content-container">
+    """
     
+    # 탭 콘텐츠 생성 (테이블)
     for i, (name, posts) in enumerate(data.items()):
         display_style = "block" if i == 0 else "none"
         html += f'<div id="{name}" class="tabcontent" style="display:{display_style}">\n'
-        html += f'  <h3>{name}</h3>\n  <ul>\n'
+        html += f'  <h3 style="margin-top: 0; margin-bottom: 20px;">{name} 채용 공고</h3>\n'
         
-        if posts:
-            for post in posts:
-                if post["link"] == "#":
-                    html += f'    <li style="color:red;">{post["title"]}</li>\n'
-                else:
-                    html += f'    <li><a href="{post["link"]}" target="_blank">📄 {post["title"]}</a></li>\n'
-        else:
-            html += f'    <li class="empty">업데이트된 공고/모집/채용 글이 없습니다.</li>\n'
-            
-        html += "  </ul>\n</div>\n"
-        
-    html += """
-        <script>
-        function openTab(evt, tabName) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tabcontent");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tablinks");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active";
-        }
-        </script>
-    </body>
-    </html>
-    """
-    return html
-
-if __name__ == "__main__":
-    print("크롤링을 시작합니다...")
-    crawled_data = crawl_sites()
-    
-    print("HTML 문서를 생성합니다...")
-    html_output = generate_html(crawled_data)
-    
-    with open("index.html", "w", encoding="utf-8") as f:
-        f.write(html_output)
-        
-    print("성공적으로 index.html을 생성했습니다.")
+        # 테이블 헤더 생성 - image_11.png와 동일 구조
+        html += """
+            <table class="board-table">
+                <thead>
+                    <tr>
+                        <th width="80">NO</th>
+                        <th width="120">
+                            <select class="select-category">
+                                <option>분류</option>
+                                <option>채용/모집</option>
+                            </select>
+                        </th>
+                        <th>제목</th>
+                        <th width="120">작성일</th>
+                        <th width="100">조회수</th>
+                    </tr>
