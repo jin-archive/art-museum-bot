@@ -8,26 +8,28 @@
         <style>
             body { font-family: 'Malgun Gothic', sans-serif; padding: 20px; max-width: 800px; margin: auto; }
             .header { text-align: center; margin-bottom: 20px; }
-            /* 탭 스타일 */
             .tab { overflow: hidden; border: 1px solid #ccc; background-color: #f1f1f1; display: flex; flex-wrap: wrap; }
             .tab button { background-color: inherit; border: none; outline: none; cursor: pointer; padding: 10px 15px; transition: 0.3s; font-size: 14px; }
             .tab button:hover { background-color: #ddd; }
-            .tab button.active { background-color: #007bff; color: white; }
-            /* 탭 콘텐츠 스타일 */
-            .tabcontent { display: none; padding: 15px; border: 1px solid #ccc; border-top: none; animation: fadeEffect 1s; }
+            .tab button.active { background-color: #007bff; color: white; font-weight: bold; }
+            .tabcontent { display: none; padding: 15px; border: 1px solid #ccc; border-top: none; animation: fadeEffect 0.5s; }
             @keyframes fadeEffect { from {opacity: 0;} to {opacity: 1;} }
             ul { list-style-type: none; padding: 0; }
-            li { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #eee; }
+            li { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #eee; line-height: 1.5; }
             a { text-decoration: none; color: #333; }
-            a:hover { color: #007bff; font-weight: bold; }
-            .empty { color: #999; font-style: italic; }
+            a:hover { color: #007bff; font-weight: bold; text-decoration: underline; }
+            .empty { color: #999; font-style: italic; text-align: center; padding: 20px; }
+            .filter-info { background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 13px; color: #555; }
         </style>
     </head>
     <body>
         <div class="header">
-            <h2>🏛️ 전국 공공미술관 채용/모집 공고 모아보기</h2>
-            <p><small>포함 키워드: 채용, 모집, 시험, 근로자, 노동자, 직원, 공무원, 공무직, 기간제 | 제외 키워드: 서류, 면접, 합격</small></p>
-            <p><small>마지막 업데이트: 2026-03-26 13:40:43</small></p>
+            <h2>🏛️ 전국 공공미술관 채용/모집 공고</h2>
+            <div class="filter-info">
+                <strong>포함:</strong> 채용, 모집, 시험, 근로자, 노동자, 직원, 공무원, 공무직, 기간제<br>
+                <strong>제외:</strong> 서류, 면접, 합격
+            </div>
+            <p><small>업데이트 시간: 2026-03-26 14:04:24</small></p>
         </div>
 
         <div class="tab">
@@ -50,9 +52,9 @@
 <div id="경남도립미술관" class="tabcontent" style="display:block">
   <h3>경남도립미술관</h3>
   <ul>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42343447" target="_blank">📄 2026년 경남도립미술관 시설물 및 정원관리분야 기간제노동자 채용 공고2026-02-23</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42343025" target="_blank">📄 경남도립미술관 서포터즈 <GAM알리러GAM> 모집2026-02-20</a></li>
-    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42324177" target="_blank">📄 경남도립미술관 기간제노동자(학예원) 채용 계획 공고2025-11-25</a></li>
+    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42343447" target="_blank">📄 2026년 경남도립미술관 시설물 및 정원관리분야 기간제노동자 채용 공고 2026-02-23</a></li>
+    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42343025" target="_blank">📄 경남도립미술관 서포터즈 <GAM알리러GAM> 모집 2026-02-20</a></li>
+    <li><a href="https://www.gyeongnam.go.kr/board/view.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&paging=ok&startPage=1&dataSid=42324177" target="_blank">📄 경남도립미술관 기간제노동자(학예원) 채용 계획 공고 2025-11-25</a></li>
   </ul>
 </div>
 <div id="광주시립미술관" class="tabcontent" style="display:none">
@@ -69,7 +71,7 @@
 <div id="국립현대미술관" class="tabcontent" style="display:none">
   <h3>국립현대미술관</h3>
   <ul>
-    <li class="empty">현재 필터링 조건에 맞는 공고가 없습니다.</li>
+    <li class="empty">현재 조건에 맞는 공고가 없습니다.</li>
   </ul>
 </div>
 <div id="대구미술관" class="tabcontent" style="display:none">
@@ -81,17 +83,16 @@
 <div id="대전시립미술관" class="tabcontent" style="display:none">
   <h3>대전시립미술관</h3>
   <ul>
-    <li><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106160&usrMenuCd=0601000000&pageIndex=1" target="_blank">📄 공지2026 대전시립미술관 버스킹 상시모집</a></li>
-    <li><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106439&usrMenuCd=0601000000&pageIndex=1" target="_blank">📄 채용2026년 대전시립미술관 교육강사 모집 공고</a></li>
+    <li><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106160&usrMenuCd=0601000000&pageIndex=1" target="_blank">📄 공지 2026 대전시립미술관 버스킹 상시모집</a></li>
+    <li><a href="https://www.daejeon.go.kr/dma/DmaBoardView.do?menuSeq=6098&tcNum=106439&usrMenuCd=0601000000&pageIndex=1" target="_blank">📄 채용 2026년 대전시립미술관 교육강사 모집 공고</a></li>
   </ul>
 </div>
 <div id="부산시립미술관" class="tabcontent" style="display:none">
   <h3>부산시립미술관</h3>
   <ul>
-    <li><a href="javascript:viewProc('90')" target="_blank">📄 2026년 부산시립미술관 예비큐레이터 모집 공고</a></li>
-    <li><a href="javascript:viewProc('89')" target="_blank">📄 2026년 부산시립미술관 학예연구실 기간제근로자(코디네이터) 모집 공고</a></li>
-    <li><a href="javascript:viewProc('88')" target="_blank">📄 2026년 부산시립미술관 예비큐레이터 모집 공고</a></li>
-    <li><a href="https://art.busan.go.kr/index.nm?menuCd=33" target="_blank">📄 직원안내</a></li>
+    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=90" target="_blank">📄 2026년 부산시립미술관 예비큐레이터 모집 공고</a></li>
+    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=89" target="_blank">📄 2026년 부산시립미술관 학예연구실 기간제근로자(코디네이터) 모집 공고</a></li>
+    <li><a href="https://art.busan.go.kr/anucmt/view.nm?id=88" target="_blank">📄 2026년 부산시립미술관 예비큐레이터 모집 공고</a></li>
   </ul>
 </div>
 <div id="부산현대미술관" class="tabcontent" style="display:none">
@@ -104,7 +105,7 @@
 <div id="서울시립미술관" class="tabcontent" style="display:none">
   <h3>서울시립미술관</h3>
   <ul>
-    <li class="empty">현재 필터링 조건에 맞는 공고가 없습니다.</li>
+    <li class="empty">현재 조건에 맞는 공고가 없습니다.</li>
   </ul>
 </div>
 <div id="수원시립미술관" class="tabcontent" style="display:none">
@@ -124,7 +125,7 @@
 <div id="전남도립미술관" class="tabcontent" style="display:none">
   <h3>전남도립미술관</h3>
   <ul>
-    <li class="empty">현재 필터링 조건에 맞는 공고가 없습니다.</li>
+    <li class="empty">현재 조건에 맞는 공고가 없습니다.</li>
   </ul>
 </div>
 <div id="전북도립미술관" class="tabcontent" style="display:none">
@@ -147,7 +148,7 @@
 <div id="포항시립미술관" class="tabcontent" style="display:none">
   <h3>포항시립미술관</h3>
   <ul>
-    <li class="empty">현재 필터링 조건에 맞는 공고가 없습니다.</li>
+    <li class="empty">현재 조건에 맞는 공고가 없습니다.</li>
   </ul>
 </div>
 
