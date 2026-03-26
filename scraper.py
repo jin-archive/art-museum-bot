@@ -3,16 +3,15 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import re
 
-# 1. 미술관 목록 및 URL (국립현대미술관 삭제됨)
+# 1. 미술관 목록 및 URL (국립현대미술관 제외됨)
 museums = [
     {"name": "경남도립미술관", "url": "https://www.gyeongnam.go.kr/gam/board/list.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&contentsSid=5850&cpath=%2Fgam"},
     {"name": "광주시립미술관", "url": "https://artmuse.gwangju.go.kr/bb/bbBoard.php?boardID=NEWS&pageID=artmuse0501000000"},
-    # 국립현대미술관 삭제
     {"name": "대구미술관", "url": "https://daeguartmuseum.or.kr/index.do?menu_id=00000791"},
     {"name": "대전시립미술관", "url": "https://www.daejeon.go.kr/dma/DmaBoardList.do?usrMenuCd=0601000000&menuSeq=6098"},
     {"name": "부산시립미술관", "url": "https://art.busan.go.kr/anucmt/list.nm"},
     {"name": "부산현대미술관", "url": "https://www.busan.go.kr/moca/news01"},
-    {"name": "서울시립미술관", "url": "https://sema.seoul.go.kr/kr/bbs/611389/getList"}, # 일반 리스트 URL
+    {"name": "서울시립미술관", "url": "https://sema.seoul.go.kr/kr/bbs/611389/getList"},
     {"name": "수원시립미술관", "url": "https://suma.suwon.go.kr/news/news_list.do"},
     {"name": "울산시립미술관", "url": "https://www.ulsan.go.kr/s/uam/bbs/list.ulsan?bbsId=BBS_0000000000000188&mId=001007002001000000"},
     {"name": "전남도립미술관", "url": "https://artmuseum.jeonnam.go.kr/www/1011?pageIndex=1&bbsSeq=2&clSeq=2&condition=&keyword=&pageUnit=10&order=INSERT_DT_DESC&url=%2Fwww%2Fbbs%2Fview%2Fpost%2Flist"},
@@ -21,7 +20,7 @@ museums = [
     {"name": "포항시립미술관", "url": "https://poma.pohang.go.kr/poma/bbs/board.php?bo_table=notice"}
 ]
 
-# 해외 IP 차단(WAF)을 최대한 우회하기 위한 브라우저 위장 헤더
+# 브라우저 위장 헤더
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
@@ -29,43 +28,19 @@ headers = {
     'Connection': 'keep-alive'
 }
 
-# 게시글이 아닌 링크(메뉴 등)를 걸러내는 강화된 함수
-def is_valid_post(title, href):
+# 💡 새로운 필터링 로직: "공고" 또는 "모집" 포함 여부만 확인
+include_keywords = ["공고", "모집"]
+
+def is_valid_post(title):
     title_clean = re.sub(r'\s+', ' ', title).strip()
     
-    # 너무 짧은 텍스트(예: "1", "다음", "NEW") 제외
-    if len(title_clean) < 6:
-        return False, ""
+    # 키워드가 하나라도 포함되어 있으면 True 반환
+    if any(keyword in title_clean for keyword in include_keywords):
+        return True, title_clean
         
-    # 메뉴나 하단 푸터에 있는 블랙리스트 단어들 대폭 확장
-    ignore_words = [
-        '개인정보', '이용약관', '저작권', '홈페이지', '본문으로', '사이트맵', 
-        '오시는길', '안내', '소개', '바로가기', '검색창', '소장품 검색',
-        '전시', '교육', '프로그램', # 이미지 8 기반 메뉴 링크 제외
-        'Art Museum', 'Museum Of Art', 'GAM' # 고유 명사나 약어 제외
-    ]
-    if any(word in title_clean for word in ignore_words):
-        return False, ""
-
-    # href 기반 강력한 보조 필터링
-    href_lower = href.lower().strip()
-    # JS 링크나 빈 링크는 제목 필터링만 적용하여 정상 처리
-    if href_lower.startswith('javascript:') or href_lower == '#' or href_lower == '':
-        return True, title_clean
-
-    # 실제 게시글 상세 페이지 링크는 보통 이런 패턴을 포함함.
-    # 패턴이 없는 링크는 메뉴로 간주하여 제외 (범용적인 방법)
-    post_link_patterns = [
-        'board.php', '.do?', '.nm?', '.ulsan?', '.gyeong?',
-        'selectbbcnttview.do', 'bbboard.php', 'getbbslist', # 구버전 SeMA 등
-    ]
-    
-    if any(pattern in href_lower for pattern in post_link_patterns):
-        return True, title_clean
-
     return False, ""
 
-# JS 링크(about:blank 방지)를 실제 상세주소로 변환하는 함수
+# JS 링크를 실제 상세주소로 변환하는 함수
 def resolve_js_link(name, url, a_tag):
     href = a_tag.get('href', '').strip()
     onclick = a_tag.get('onclick', '').strip()
@@ -78,7 +53,6 @@ def resolve_js_link(name, url, a_tag):
         
         if extracted_params:
             post_id = extracted_params[0]
-            # 국립현대미술관 로직 삭제
             if name == "대구미술관":
                 return f"https://daeguartmuseum.or.kr/index.do?menu_id=00000791&board_seq={post_id}"
             elif name == "부산시립미술관":
@@ -88,7 +62,6 @@ def resolve_js_link(name, url, a_tag):
             elif name == "서울시립미술관":
                 return f"https://sema.seoul.go.kr/kr/bbs/611389/detail.nm?bbsId=611389&nttId={post_id}"
             
-    # 일반적인 링크인 경우 URL 결합
     return requests.compat.urljoin(url, href)
 
 def crawl_sites():
@@ -111,16 +84,16 @@ def crawl_sites():
             response.encoding = 'utf-8' # 한글 깨짐 방지
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            # 한 미술관당 최대 15개까지만 가져오기 (게시판 전체 도배 방지)
+            # 한 미술관당 최대 20개까지만 검색
             count = 0 
             for a_tag in soup.find_all('a'):
-                if count >= 15:
+                if count >= 20:
                     break
                     
                 raw_title = a_tag.get_text(separator=' ', strip=True)
-                href = a_tag.get('href', '')
-                is_valid, clean_title = is_valid_post(raw_title, href)
+                is_valid, clean_title = is_valid_post(raw_title)
                 
+                # "공고"나 "모집"이 포함된 유효한 제목일 경우에만 저장
                 if is_valid:
                     full_link = resolve_js_link(name, url, a_tag)
                     
@@ -130,7 +103,7 @@ def crawl_sites():
                         count += 1
                         
         except requests.exceptions.ConnectionError:
-            results[name].append({"title": "⚠️ 해당 기관 서버에서 해외 IP(깃허브 액션) 접속을 차단했습니다.", "link": "#"})
+            results[name].append({"title": "⚠️ 해당 기관 서버에서 접근을 차단했습니다.", "link": "#"})
         except Exception as e:
             print(f"Error crawling {name}: {e}")
             results[name].append({"title": f"⚠️ 데이터를 불러오는 중 오류 발생: {e}", "link": "#"})
@@ -146,7 +119,7 @@ def generate_html(data):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>🏛️ 전국 공공미술관 게시판 모아보기 (전체글)</title>
+        <title>🏛️ 전국 공공미술관 게시판 모아보기</title>
         <style>
             body {{ font-family: 'Malgun Gothic', sans-serif; padding: 20px; max-width: 900px; margin: auto; }}
             .header {{ text-align: center; margin-bottom: 20px; }}
@@ -161,11 +134,13 @@ def generate_html(data):
             a {{ text-decoration: none; color: #333; }}
             a:hover {{ color: #007bff; font-weight: bold; text-decoration: underline; }}
             .empty {{ color: #999; font-style: italic; text-align: center; padding: 20px; }}
+            .filter-info {{ background: #e9ecef; padding: 8px; border-radius: 5px; font-size: 13px; color: #495057; display: inline-block; margin-top: 10px; }}
         </style>
     </head>
     <body>
         <div class="header">
-            <h2>🏛️ 전국 공공미술관 게시판 모아보기 (전체글)</h2>
+            <h2>🏛️ 전국 공공미술관 게시판 모아보기</h2>
+            <div class="filter-info">🔍 "공고" 또는 "모집"이 포함된 게시글만 표시됩니다.</div>
             <p><small>업데이트 시간: {update_time}</small></p>
         </div>
 
@@ -185,13 +160,12 @@ def generate_html(data):
         
         if posts:
             for post in posts:
-                # 에러 메시지인 경우 링크 스타일 다르게 처리
                 if post["link"] == "#":
                     html += f'    <li style="color:red;">{post["title"]}</li>\n'
                 else:
                     html += f'    <li><a href="{post["link"]}" target="_blank">📄 {post["title"]}</a></li>\n'
         else:
-            html += f'    <li class="empty">게시글을 불러오지 못했습니다.</li>\n'
+            html += f'    <li class="empty">조건("공고", "모집")에 맞는 게시글이 없습니다.</li>\n'
             
         html += "  </ul>\n</div>\n"
         
