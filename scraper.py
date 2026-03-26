@@ -237,3 +237,97 @@ def generate_html(data):
                         <th width="120">작성일</th>
                         <th width="100">조회수</th>
                     </tr>
+                </thead>
+                <tbody>
+        """
+        
+        if posts:
+            # 게시글 행 생성
+            for j, post in enumerate(posts):
+                # j + 1 로 NO 컬럼 생성
+                # 분류는 "구인/구직"으로 고정 (이미지 분위기에 맞춤)
+                # 작성일과 조회수는 데이터가 없으므로 빈칸으로 둡니다.
+                html += f"""
+                    <tr>
+                        <td>{j + 1}</td>
+                        <td>구인/구직</td>
+                        <td><a href="{post["link"]}" target="_blank">{post["title"]}</a></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                """
+        else:
+            # 게시글이 없을 때 메시지
+            html += """
+                    <tr>
+                        <td colspan="5" class="empty">업데이트된 채용/모집 글이 없습니다.</td>
+                    </tr>
+            """
+            
+        html += """
+                </tbody>
+            </table>
+        </div>
+        """
+        
+    # 페이지네이션 - 스타일만 구현
+    html += """
+        </div>
+
+        <div class="pagination">
+            <div class="pagination-inner">
+                <a href="#" class="active">1</a>
+                <a href="#">2</a>
+                <a href="#">3</a>
+                <a href="#">다음</a>
+            </div>
+        </div>
+
+        <div class="main-footer">
+            <div class="footer-inner">
+                <div class="footer-links">
+                    <a href="#">회사소개</a>
+                    <a href="#">이용약관</a>
+                    <a href="#">개인정보처리방침</a>
+                </div>
+                <div class="footer-copyright">
+                    © 2026 Art Job Board. All Rights Reserved.
+                </div>
+            </div>
+        </div>
+    """
+    
+    # JavaScript 추가 (탭 동작 로직)
+    html += """
+        <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        </script>
+    </body>
+    </html>
+    """
+    
+    return html
+
+if __name__ == "__main__":
+    print("크롤링을 시작합니다...")
+    crawled_data = crawl_sites()
+    
+    print("HTML 문서를 생성합니다...")
+    html_output = generate_html(crawled_data)
+    
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(html_output)
+        
+    print("성공적으로 index.html을 생성했습니다.")
