@@ -3,16 +3,16 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import re
 
-# 1. 미술관 목록 및 URL
+# 1. 미술관 목록 및 URL (국립현대미술관 삭제됨)
 museums = [
     {"name": "경남도립미술관", "url": "https://www.gyeongnam.go.kr/gam/board/list.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&contentsSid=5850&cpath=%2Fgam"},
     {"name": "광주시립미술관", "url": "https://artmuse.gwangju.go.kr/bb/bbBoard.php?boardID=NEWS&pageID=artmuse0501000000"},
-    {"name": "국립현대미술관", "url": "https://www.mmca.go.kr/pr/employmentList.do"},
+    # 국립현대미술관 삭제
     {"name": "대구미술관", "url": "https://daeguartmuseum.or.kr/index.do?menu_id=00000791"},
     {"name": "대전시립미술관", "url": "https://www.daejeon.go.kr/dma/DmaBoardList.do?usrMenuCd=0601000000&menuSeq=6098"},
     {"name": "부산시립미술관", "url": "https://art.busan.go.kr/anucmt/list.nm"},
     {"name": "부산현대미술관", "url": "https://www.busan.go.kr/moca/news01"},
-    {"name": "서울시립미술관", "url": "https://sema.seoul.go.kr/kr/bbs/611389/getList"},
+    {"name": "서울시립미술관", "url": "https://sema.seoul.go.kr/kr/bbs/611389/getList"}, # 일반 리스트 URL
     {"name": "수원시립미술관", "url": "https://suma.suwon.go.kr/news/news_list.do"},
     {"name": "울산시립미술관", "url": "https://www.ulsan.go.kr/s/uam/bbs/list.ulsan?bbsId=BBS_0000000000000188&mId=001007002001000000"},
     {"name": "전남도립미술관", "url": "https://artmuseum.jeonnam.go.kr/www/1011?pageIndex=1&bbsSeq=2&clSeq=2&condition=&keyword=&pageUnit=10&order=INSERT_DT_DESC&url=%2Fwww%2Fbbs%2Fview%2Fpost%2Flist"},
@@ -29,22 +29,43 @@ headers = {
     'Connection': 'keep-alive'
 }
 
-# 불필요한 UI 링크(게시글이 아닌 링크)를 걸러내는 함수
-def is_valid_post(title):
+# 게시글이 아닌 링크(메뉴 등)를 걸러내는 강화된 함수
+def is_valid_post(title, href):
     title_clean = re.sub(r'\s+', ' ', title).strip()
     
     # 너무 짧은 텍스트(예: "1", "다음", "NEW") 제외
     if len(title_clean) < 6:
         return False, ""
         
-    # 메뉴나 하단 푸터에 있는 일반적인 단어들 제외
-    ignore_words = ['개인정보', '이용약관', '저작권', '홈페이지', '본문으로', '오시는길', '사이트맵']
+    # 메뉴나 하단 푸터에 있는 블랙리스트 단어들 대폭 확장
+    ignore_words = [
+        '개인정보', '이용약관', '저작권', '홈페이지', '본문으로', '사이트맵', 
+        '오시는길', '안내', '소개', '바로가기', '검색창', '소장품 검색',
+        '전시', '교육', '프로그램', # 이미지 8 기반 메뉴 링크 제외
+        'Art Museum', 'Museum Of Art', 'GAM' # 고유 명사나 약어 제외
+    ]
     if any(word in title_clean for word in ignore_words):
         return False, ""
-        
-    return True, title_clean
 
-# JS 링크를 실제 상세주소로 변환하는 함수
+    # href 기반 강력한 보조 필터링
+    href_lower = href.lower().strip()
+    # JS 링크나 빈 링크는 제목 필터링만 적용하여 정상 처리
+    if href_lower.startswith('javascript:') or href_lower == '#' or href_lower == '':
+        return True, title_clean
+
+    # 실제 게시글 상세 페이지 링크는 보통 이런 패턴을 포함함.
+    # 패턴이 없는 링크는 메뉴로 간주하여 제외 (범용적인 방법)
+    post_link_patterns = [
+        'board.php', '.do?', '.nm?', '.ulsan?', '.gyeong?',
+        'selectbbcnttview.do', 'bbboard.php', 'getbbslist', # 구버전 SeMA 등
+    ]
+    
+    if any(pattern in href_lower for pattern in post_link_patterns):
+        return True, title_clean
+
+    return False, ""
+
+# JS 링크(about:blank 방지)를 실제 상세주소로 변환하는 함수
 def resolve_js_link(name, url, a_tag):
     href = a_tag.get('href', '').strip()
     onclick = a_tag.get('onclick', '').strip()
@@ -57,17 +78,17 @@ def resolve_js_link(name, url, a_tag):
         
         if extracted_params:
             post_id = extracted_params[0]
+            # 국립현대미술관 로직 삭제
             if name == "대구미술관":
                 return f"https://daeguartmuseum.or.kr/index.do?menu_id=00000791&board_seq={post_id}"
             elif name == "부산시립미술관":
                 return f"https://art.busan.go.kr/anucmt/view.nm?id={post_id}"
-            elif name == "국립현대미술관":
-                return f"https://www.mmca.go.kr/pr/employmentDetail.do?empId={post_id}"
             elif name == "청주시립미술관":
                 return f"https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?bbsNo=5&nttNo={post_id}&key=72"
             elif name == "서울시립미술관":
                 return f"https://sema.seoul.go.kr/kr/bbs/611389/detail.nm?bbsId=611389&nttId={post_id}"
             
+    # 일반적인 링크인 경우 URL 결합
     return requests.compat.urljoin(url, href)
 
 def crawl_sites():
@@ -83,6 +104,8 @@ def crawl_sites():
             session.headers.update(headers)
             if name == "청주시립미술관":
                 session.headers.update({'Referer': url})
+            else:
+                session.headers.update({'Referer': ''})
                 
             response = session.get(url, verify=False, timeout=15)
             response.encoding = 'utf-8' # 한글 깨짐 방지
@@ -95,7 +118,8 @@ def crawl_sites():
                     break
                     
                 raw_title = a_tag.get_text(separator=' ', strip=True)
-                is_valid, clean_title = is_valid_post(raw_title)
+                href = a_tag.get('href', '')
+                is_valid, clean_title = is_valid_post(raw_title, href)
                 
                 if is_valid:
                     full_link = resolve_js_link(name, url, a_tag)
@@ -122,7 +146,7 @@ def generate_html(data):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>🏛️ 전국 공공미술관 게시판 모아보기</title>
+        <title>🏛️ 전국 공공미술관 게시판 모아보기 (전체글)</title>
         <style>
             body {{ font-family: 'Malgun Gothic', sans-serif; padding: 20px; max-width: 900px; margin: auto; }}
             .header {{ text-align: center; margin-bottom: 20px; }}
