@@ -171,4 +171,40 @@ def generate_html(data):
         else:
             html += f'    <li class="empty">현재 조건에 맞는 공고가 없습니다.</li>\n'
             
-        html
+        html += "  </ul>\n</div>\n"
+        
+    html += """
+        <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        </script>
+    </body>
+    </html>
+    """
+    return html
+
+if __name__ == "__main__":
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    
+    print("크롤링을 시작합니다...")
+    crawled_data = crawl_sites()
+    
+    print("HTML 문서를 생성합니다...")
+    html_output = generate_html(crawled_data)
+    
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(html_output)
+        
+    print("성공적으로 index.html을 생성했습니다.")
