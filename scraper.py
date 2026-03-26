@@ -2,8 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import re
+import urllib3
 
-# 1. 미술관 목록 및 URL (국립현대미술관 제외됨)
+# SSL 인증서 경고 무시
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# 1. 미술관 목록 및 URL
 museums = [
     {"name": "경남도립미술관", "url": "https://www.gyeongnam.go.kr/gam/board/list.gyeong?boardId=BBS_0001504&menuCd=DOM_000003405000000000&contentsSid=5850&cpath=%2Fgam"},
     {"name": "광주시립미술관", "url": "https://artmuse.gwangju.go.kr/bb/bbBoard.php?boardID=NEWS&pageID=artmuse0501000000"},
@@ -20,27 +24,47 @@ museums = [
     {"name": "포항시립미술관", "url": "https://poma.pohang.go.kr/poma/bbs/board.php?bo_table=notice"}
 ]
 
-# 브라우저 위장 헤더
+# 강력한 브라우저 위장 헤더
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-    'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-    'Connection': 'keep-alive'
+    'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7'
 }
 
-# 💡 새로운 필터링 로직: "공고" 또는 "모집" 포함 여부만 확인
-include_keywords = ["공고", "모집"]
+# 💡 필터링 키워드
+include_keywords = ["공고", "모집", "채용" "근로자" "노동자"]
 
-def is_valid_post(title):
-    title_clean = re.sub(r'\s+', ' ', title).strip()
+# HTML 태그의 텍스트, 속성, 이미지 아이콘까지 전부 긁어와 검사하는 강력한 함수
+def is_valid_post(a_tag):
+    texts = []
     
-    # 키워드가 하나라도 포함되어 있으면 True 반환
+    # 1. 툴팁(title) 속성 추출
+    if a_tag.get('title'):
+        texts.append(a_tag.get('title'))
+        
+    # 2. 보여지는 텍스트 추출
+    texts.append(a_tag.get_text(separator=' ', strip=True))
+    
+    # 3. 이미지(아이콘)의 대체 텍스트 추출 (예: <img alt="공고">)
+    for img in a_tag.find_all('img'):
+        if img.get('alt'):
+            texts.append(img.get('alt'))
+            
+    # 하나로 합치고 공백 정리
+    raw_title = ' '.join(texts)
+    title_clean = re.sub(r'\s+', ' ', raw_title).strip()
+    
+    # 글자 수가 너무 짧은 메뉴 버튼 등 제외
+    if len(title_clean) < 4:
+        return False, ""
+        
+    # 지정된 키워드 포함 여부 검사
     if any(keyword in title_clean for keyword in include_keywords):
         return True, title_clean
         
     return False, ""
 
-# JS 링크를 실제 상세주소로 변환하는 함수
+# JS 링크를 실제 상세페이지 주소로 변환
 def resolve_js_link(name, url, a_tag):
     href = a_tag.get('href', '').strip()
     onclick = a_tag.get('onclick', '').strip()
@@ -59,8 +83,6 @@ def resolve_js_link(name, url, a_tag):
                 return f"https://art.busan.go.kr/anucmt/view.nm?id={post_id}"
             elif name == "청주시립미술관":
                 return f"https://cmoa.cheongju.go.kr/www/selectBbsNttView.do?bbsNo=5&nttNo={post_id}&key=72"
-            elif name == "서울시립미술관":
-                return f"https://sema.seoul.go.kr/kr/bbs/611389/detail.nm?bbsId=611389&nttId={post_id}"
             
     return requests.compat.urljoin(url, href)
 
@@ -80,24 +102,39 @@ def crawl_sites():
             else:
                 session.headers.update({'Referer': ''})
                 
+            # 📌 [특수 처리] 서울시립미술관은 API에서 JSON 데이터를 직접 추출
+            if name == "서울시립미술관":
+                api_url = "https://sema.seoul.go.kr/kr/bbs/611389/getBbsList"
+                res = session.get(api_url, verify=False, timeout=15)
+                data = res.json()
+                
+                # JSON 데이터에서 게시글 목록 가져오기
+                posts = data.get('list', []) or data.get('nttList', [])
+                for p in posts:
+                    title = p.get('nttSj', '')
+                    ntt_id = p.get('nttId', '')
+                    
+                    if any(kw in title for kw in include_keywords) and ntt_id:
+                        link = f"https://sema.seoul.go.kr/kr/bbs/611389/detail.nm?bbsId=611389&nttId={ntt_id}"
+                        if not any(i['link'] == link for i in results[name]):
+                            results[name].append({"title": title, "link": link})
+                continue # API 처리 후 다음 미술관으로 이동
+
+            # 일반 미술관 HTML 크롤링 시작
             response = session.get(url, verify=False, timeout=15)
-            response.encoding = 'utf-8' # 한글 깨짐 방지
+            response.encoding = 'utf-8'
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            # 한 미술관당 최대 20개까지만 검색
             count = 0 
             for a_tag in soup.find_all('a'):
-                if count >= 20:
+                if count >= 30: # 넉넉하게 탐색
                     break
                     
-                raw_title = a_tag.get_text(separator=' ', strip=True)
-                is_valid, clean_title = is_valid_post(raw_title)
+                is_valid, clean_title = is_valid_post(a_tag)
                 
-                # "공고"나 "모집"이 포함된 유효한 제목일 경우에만 저장
                 if is_valid:
                     full_link = resolve_js_link(name, url, a_tag)
                     
-                    # 중복 링크 방지
                     if not any(item['link'] == full_link for item in results[name]):
                         results[name].append({"title": clean_title, "link": full_link})
                         count += 1
@@ -140,7 +177,7 @@ def generate_html(data):
     <body>
         <div class="header">
             <h2>🏛️ 전국 공공미술관 게시판 모아보기</h2>
-            <div class="filter-info">🔍 "공고" 또는 "모집"이 포함된 게시글만 표시됩니다.</div>
+            <div class="filter-info">🔍 "공고", "모집", "채용"이 포함된 게시글이 표시됩니다.</div>
             <p><small>업데이트 시간: {update_time}</small></p>
         </div>
 
@@ -165,7 +202,7 @@ def generate_html(data):
                 else:
                     html += f'    <li><a href="{post["link"]}" target="_blank">📄 {post["title"]}</a></li>\n'
         else:
-            html += f'    <li class="empty">조건("공고", "모집")에 맞는 게시글이 없습니다.</li>\n'
+            html += f'    <li class="empty">업데이트된 공고/모집/채용 글이 없습니다.</li>\n'
             
         html += "  </ul>\n</div>\n"
         
@@ -191,9 +228,6 @@ def generate_html(data):
     return html
 
 if __name__ == "__main__":
-    import urllib3
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    
     print("크롤링을 시작합니다...")
     crawled_data = crawl_sites()
     
